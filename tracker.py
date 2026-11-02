@@ -29,7 +29,15 @@ def probe(path):
     return dur, float(f.group(1)) if f else 30.0
 
 
-def convert(src, dst):
+def count_frames(path):
+    """Number of video frames in a file (reads packets only, so it is fast and light)."""
+    r = subprocess.run([FFMPEG, "-hide_banner", "-loglevel", "error", "-i", path, "-map", "0:v:0", "-c", "copy",
+                        "-f", "framecrc", "-"], capture_output=True, text=True, timeout=120)
+    n = sum(1 for line in r.stdout.splitlines() if line and not line.startswith("#"))
+    return n or None
+
+
+def convert(src, dst, native_fps=None):
     """Re-encode to a small H.264 MP4 (SAM needs it) without dropping or adding frames.
 
     Settings are chosen to keep memory low on a small server: one decoder thread,
@@ -38,11 +46,21 @@ def convert(src, dst):
     base = [FFMPEG, "-y", "-hide_banner", "-loglevel", "error", "-threads", "1", "-i", src, "-an",
             "-vf", "scale='min(720,iw)':-2", "-c:v", "libx264", "-preset", "ultrafast",
             "-crf", "28", "-threads", "2", "-pix_fmt", "yuv420p", "-movflags", "+faststart"]
+    ok = False
     for sync in (["-fps_mode", "passthrough"], ["-vsync", "0"]):
         r = subprocess.run(base + sync + [dst], capture_output=True, text=True, timeout=240)
         if r.returncode == 0 and os.path.exists(dst):
-            return
-    raise UserError("We couldn't read that video. Try recording again, or export it as MP4.")
+            ok = True
+            break
+    if not ok:
+        raise UserError("We couldn't read that video. Try recording again, or export it as MP4.")
+    # If frames went missing, try once more forcing the original frame rate.
+    if native_fps:
+        a, b = count_frames(src), count_frames(dst)
+        if a and b and b < 0.97 * a:
+            r = subprocess.run(base + ["-fps_mode", "cfr", "-r", str(native_fps), dst], capture_output=True, text=True, timeout=240)
+            if r.returncode != 0:
+                subprocess.run(base + ["-vsync", "cfr", "-r", str(native_fps), dst], capture_output=True, text=True, timeout=240)
 
 
 def parse_boxes(text):
