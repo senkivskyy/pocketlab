@@ -155,27 +155,26 @@ def run_experiment(job, path, p):
     job["stage"], job["pct"] = "Getting your video ready", 15
     mp4 = path + ".mp4"
     tracker.convert(path, mp4, native_fps)
-    # Safety net: if the converted video still has a different number of frames than the original,
-    # rescale time so the physics always uses real time (frame index x ratio / capture fps).
-    n_orig, n_conv = tracker.count_frames(path), tracker.count_frames(mp4)
-    ratio = (n_orig / n_conv) if n_orig and n_conv else 1.0
-    if not 0.98 <= ratio <= 1.02:
-        print(f"frame count changed in conversion: {n_orig} -> {n_conv}, rescaling time by {ratio:.3f}")
-    else:
-        ratio = 1.0
     job["stage"], job["pct"] = "SAM 3.1 is tracking your object", 30
     if tracker.MOCK:
         time.sleep(2)
-        rows, _ = tracker.mock_rows(p["mission"], fps, p["size_m"], p.get("length_m"))
+        rows, n_sam = tracker.mock_rows(p["mission"], fps, p["size_m"], p.get("length_m"))
+        n_sam = None
     else:
-        rows, _ = tracker.track(mp4, p["prompt"])
+        rows, n_sam = tracker.track(mp4, p["prompt"])
+    header_frames = dur * native_fps
+    ratio = tracker.frame_ratio(header_frames, n_sam)
+    debug = {"file_seconds": round(dur, 2), "file_fps": round(native_fps, 2), "file_frames_est": int(header_frames),
+             "sam_frames": n_sam, "tracked_rows": len(rows), "first_frame": rows[0]["frame"] if rows else None,
+             "last_frame": rows[-1]["frame"] if rows else None, "time_scale": ratio, "fps_used": fps}
+    print("debug:", debug)
     if len(rows) < 12:
         raise UserError("SAM only saw your object for a moment. Keep it in view and film against a plain background.")
     job["stage"], job["pct"] = "Doing the physics", 85
     ruler = "height" if p["mission"] == "drop" else "min"
     t, x, y, scale = P.to_series(rows, fps / ratio, p["size_m"], ruler)
 
-    res = {"mission": p["mission"], "frames": len(rows), "fps": fps, "frame_ratio": round(ratio, 3), "seconds": round(float(t[-1]), 2),
+    res = {"mission": p["mission"], "frames": len(rows), "fps": fps, "frame_ratio": ratio, "debug": debug, "seconds": round(float(t[-1]), 2),
            "inputs": {"object": p["prompt"], "size_cm": round(p["size_m"] * 100, 1), "length_cm": round((p.get("length_m") or 0) * 100, 1)}}
     if p["mission"] == "pendulum":
         r = P.analyze_pendulum(t, x, p["length_m"])

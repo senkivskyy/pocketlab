@@ -257,6 +257,7 @@ async function renderResult(m, res) {
     <div class="big">${res.g.toFixed(2)} <small>m/s²</small></div>
     <p class="muted" style="text-align:center">Your measured g. Accepted value: 9.81 · off by ${res.error.toFixed(1)}%</p>
     <div class="stats">${stats.map(s => `<div><b>${s[0]}</b><span>${s[1]}</span></div>`).join('')}</div>
+    <details class="small muted" style="margin:0 0 8px"><summary>Technical details</summary><pre style="white-space:pre-wrap;font-size:12px">${esc(JSON.stringify(res.debug, null, 1))}</pre></details>
     <div class="panel"><h3>${pd.ok ? '🎯 Nice prediction! +25 XP' : '🧠 Your prediction'}</h3><p class="muted">${predTxt}</p></div>
     <canvas class="chart" id="ch" role="img" aria-label="Tracked motion chart"></canvas>
     <p class="small muted">${esc(res.axis)} tracked by SAM 3.1${res.fit ? '. Dashed line: the free-fall curve fitted to your drop.' : '.'}</p>

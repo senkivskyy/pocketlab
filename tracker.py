@@ -85,12 +85,14 @@ def track(mp4_path, prompt):
     client = _client()
     with open(mp4_path, "rb") as f:
         uploaded = client.files.create(file=f, purpose="user_data")
-    frames, buf = {}, ""
+    frames, buf, maxf = {}, "", [-1]
 
     def drain(final=False):
         """Keep only the small boxes; drop the big mask data as soon as a frame is complete."""
         nonlocal buf
         marks = list(FRAME_RE.finditer(buf))
+        if marks:
+            maxf[0] = max(maxf[0], max(int(m.group(1)) for m in marks))
         if not final and len(marks) < 2:
             return
         cut = len(buf) if final else marks[-1].start()
@@ -131,7 +133,7 @@ def track(mp4_path, prompt):
             x1, y1, x2, y2 = frames[frame][best]
             rows.append({"frame": frame, "cx": (x1 + x2) / 2, "cy": (y1 + y2) / 2,
                          "width": x2 - x1, "height": y2 - y1})
-    return rows, len(frames)
+    return rows, maxf[0] + 1  # rows, and how many frames SAM says it went through
 
 
 def mock_rows(mission, fps, size_m, length_m):
@@ -168,3 +170,16 @@ def mock_rows(mission, fps, size_m, length_m):
         rows.append({"frame": i, "cx": 500 + xi / scale + rng.normal(0, 0.7),
                      "cy": 900 - yi / scale + rng.normal(0, 0.7), "width": 100.0, "height": 100.0})
     return rows, len(rows)
+
+
+def frame_ratio(header_frames, sam_frames):
+    """How many original frames each SAM frame stands for (1 normally).
+
+    If SAM reports about 1/2 (or 1/3...) as many frames as the file really holds, its frame numbers
+    count every 2nd (3rd...) frame, so time per SAM frame is that many times longer.
+    """
+    if not header_frames or not sam_frames or header_frames < 20:
+        return 1.0
+    r = header_frames / sam_frames
+    k = round(r)
+    return float(k) if k >= 2 and abs(r - k) <= 0.08 * k else 1.0
