@@ -30,10 +30,14 @@ def probe(path):
 
 
 def convert(src, dst):
-    """Re-encode to H.264 MP4 (SAM needs it) without dropping or adding frames."""
-    base = [FFMPEG, "-y", "-hide_banner", "-loglevel", "error", "-i", src, "-an",
-            "-vf", "scale='min(960,iw)':-2", "-c:v", "libx264", "-preset", "veryfast",
-            "-crf", "26", "-pix_fmt", "yuv420p", "-movflags", "+faststart"]
+    """Re-encode to a small H.264 MP4 (SAM needs it) without dropping or adding frames.
+
+    Settings are chosen to keep memory low on a small server: one decoder thread,
+    a modest output size and the lightest x264 preset.
+    """
+    base = [FFMPEG, "-y", "-hide_banner", "-loglevel", "error", "-threads", "1", "-i", src, "-an",
+            "-vf", "scale='min(720,iw)':-2", "-c:v", "libx264", "-preset", "ultrafast",
+            "-crf", "28", "-threads", "2", "-pix_fmt", "yuv420p", "-movflags", "+faststart"]
     for sync in (["-fps_mode", "passthrough"], ["-vsync", "0"]):
         r = subprocess.run(base + sync + [dst], capture_output=True, text=True, timeout=240)
         if r.returncode == 0 and os.path.exists(dst):
@@ -63,7 +67,19 @@ def track(mp4_path, prompt):
     client = _client()
     with open(mp4_path, "rb") as f:
         uploaded = client.files.create(file=f, purpose="user_data")
-    text = ""
+    frames, buf = {}, ""
+
+    def drain(final=False):
+        """Keep only the small boxes; drop the big mask data as soon as a frame is complete."""
+        nonlocal buf
+        marks = list(FRAME_RE.finditer(buf))
+        if not final and len(marks) < 2:
+            return
+        cut = len(buf) if final else marks[-1].start()
+        for fr, objs in parse_boxes(buf[:cut]).items():
+            frames.setdefault(fr, {}).update(objs)
+        buf = buf[cut:]
+
     try:
         with client.responses.stream(
             model="sam-3.1",
@@ -74,13 +90,15 @@ def track(mp4_path, prompt):
         ) as stream:
             for event in stream:
                 if event.type == "response.output_text.delta":
-                    text += event.delta
+                    buf += event.delta
+                    if len(buf) > 200_000:
+                        drain()
+        drain(final=True)
     finally:
         try:
             client.files.delete(uploaded.id)
         except Exception:
             pass
-    frames = parse_boxes(text)
     counts = {}
     for fr in frames.values():
         for o in fr:

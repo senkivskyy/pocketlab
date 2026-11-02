@@ -36,7 +36,7 @@ BASE = Path(__file__).parent
 app = FastAPI(title="Pocket Lab")
 game.init()
 
-pool = ThreadPoolExecutor(max_workers=3)
+pool = ThreadPoolExecutor(max_workers=1)  # one video at a time keeps memory low on a small server
 JOBS = {}
 _lock = threading.Lock()
 _day, _used_ip, _used_global = None, {}, 0
