@@ -2,7 +2,7 @@
 
 **Turn your phone into a science lab. Film an everyday experiment, let Meta's SAM 3.1 track it, measure real physics, and level up.**
 
-- **Live app:** YOUR_RENDER_URL_HERE
+- **Live app:** https://pocketlab-cmr9.onrender.com/
 - **Demo video:** YOUR_YOUTUBE_URL_HERE
 - **Event:** Meta Global AI Developer Hackathon
 
