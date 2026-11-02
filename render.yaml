@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: pocketlab
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: MODEL_API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: PER_IP_DAILY
+        value: "10"
+      - key: GLOBAL_DAILY
+        value: "200"

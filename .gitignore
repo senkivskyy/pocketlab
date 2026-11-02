@@ -5,4 +5,6 @@ __pycache__/
 *.mov
 *.mp4
 sam_raw.txt
+*_track.csv
+data/
 track.csv

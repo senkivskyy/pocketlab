@@ -69,7 +69,8 @@ def main():
     print(f"Frames with detections: {len(frames)}  |  objects: {objects}")
     print(f"Rough cost: ${len(frames) / 1000 * 0.20:.4f} (at $0.20 per 1,000 frames)")
 
-    with open("track.csv", "w", newline="") as f:
+    out_csv = os.path.splitext(sys.argv[1])[0] + "_track.csv"
+    with open(out_csv, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["frame", "object", "cx", "cy", "width", "height"])
         for frame in sorted(frames):
@@ -78,7 +79,7 @@ def main():
     first = sorted(frames)[:5]
     for fr in first:
         print(" frame", fr, frames[fr])
-    print("Saved track.csv (the path of each object) and sam_raw.txt (SAM's raw answer).")
+    print(f"Saved {out_csv} (the path of each object) and sam_raw.txt (SAM's raw answer).")
 
 
 if __name__ == "__main__":

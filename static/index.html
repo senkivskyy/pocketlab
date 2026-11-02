@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>Pocket Lab</title>
+<meta name="description" content="Film an everyday experiment. SAM 3.1 tracks it, real physics measures it, and you level up.">
+<style>
+:root{--bg:#0b1020;--panel:#141b33;--panel2:#1b2442;--line:#2a3560;--text:#eef2ff;--muted:#9aa6cf;--accent:#38e1c1;--accent2:#7c8cff;
+--gold:#f5c451;--silver:#cfd8e3;--bronze:#d08a4e;--bad:#ff7a8a;--r:16px}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+body{min-height:100vh;padding-bottom:84px;background:radial-gradient(900px 500px at 80% -10%,#1f2a5a55,transparent),var(--bg)}
+button,input,select{font:inherit;color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;max-width:760px;margin:0 auto}
+.brand{font-weight:800;font-size:20px;letter-spacing:.2px}.brand b{color:var(--accent)}
+.chip{display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px;color:var(--muted);cursor:pointer}
+.chip strong{color:var(--text)}
+main{max-width:760px;margin:0 auto;padding:0 16px 24px}
+h1{font-size:30px;line-height:1.15;margin:8px 0 6px}h2{font-size:20px;margin:22px 0 10px}h3{margin:0 0 4px;font-size:17px}
+p{margin:6px 0}.muted{color:var(--muted)}.small{font-size:13px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.tile{background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer;text-align:left;display:block;width:100%;transition:transform .12s,border-color .12s}
+.tile:hover,.tile:focus-visible{transform:translateY(-2px);border-color:var(--accent);outline:none}
+.tile .em{font-size:30px}.tile.locked{opacity:.55;cursor:default}.tile.locked:hover{transform:none;border-color:var(--line)}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;margin-left:6px;vertical-align:middle;background:#ffffff14;color:var(--muted)}
+.tag.gold{background:#f5c45126;color:var(--gold)}.tag.silver{background:#cfd8e326;color:var(--silver)}.tag.bronze{background:#d08a4e26;color:var(--bronze)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--accent);color:#04201a;font-weight:800;border:0;border-radius:12px;padding:13px 18px;cursor:pointer;min-height:48px}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}.btn.full{width:100%}.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent2);outline-offset:2px}
+label{display:block;font-weight:600;margin:14px 0 6px}
+input[type=text],input[type=number],select{width:100%;background:#0e1530;border:1px solid var(--line);border-radius:12px;padding:12px;min-height:46px}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.bar{height:10px;background:#0e1530;border-radius:99px;overflow:hidden;border:1px solid var(--line)}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .4s}
+.steps{counter-reset:s;list-style:none;padding:0;margin:8px 0}
+.steps li{counter-increment:s;display:flex;gap:10px;margin:8px 0}.steps li:before{content:counter(s);flex:0 0 26px;height:26px;border-radius:50%;background:var(--accent);color:#04201a;font-weight:800;display:grid;place-items:center;font-size:13px}
+.flow{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.flow span{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+nav{position:fixed;left:0;right:0;bottom:0;background:#0b1020ee;backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;justify-content:center;gap:6px;padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+nav button{flex:1;max-width:200px;background:transparent;border:0;border-radius:12px;padding:8px;color:var(--muted);cursor:pointer;font-size:12px;min-height:48px}
+nav button span{display:block;font-size:20px}nav button[aria-current=true]{color:var(--accent);background:#38e1c112}
+.medal{width:120px;height:120px;border-radius:50%;margin:6px auto;display:grid;place-items:center;font-size:54px;border:4px solid;animation:pop .7s cubic-bezier(.2,1.6,.4,1)}
+.medal.gold{border-color:var(--gold);background:radial-gradient(circle,#f5c45133,transparent 70%)}.medal.silver{border-color:var(--silver);background:radial-gradient(circle,#cfd8e333,transparent 70%)}
+.medal.bronze{border-color:var(--bronze);background:radial-gradient(circle,#d08a4e33,transparent 70%)}.medal.none{border-color:var(--line)}
+@keyframes pop{from{transform:scale(.2) rotate(-30deg);opacity:0}to{transform:none;opacity:1}}
+.big{font-size:44px;font-weight:800;text-align:center;line-height:1}.big small{font-size:16px;color:var(--muted);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:12px 0}.stats div{background:#0e1530;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stats b{display:block;font-size:20px}.stats span{font-size:12px;color:var(--muted)}
+canvas.chart{width:100%;height:210px;background:#0e1530;border-radius:12px;border:1px solid var(--line)}
+canvas.card{width:100%;max-width:340px;display:block;margin:10px auto;border-radius:18px;box-shadow:0 14px 40px #0008}
+.row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}.row:last-child{border:0}
+.row .n{width:28px;text-align:center;font-weight:800;color:var(--muted)}.row .who{flex:1;min-width:0}.row .who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row.me{background:#38e1c10f;border-radius:10px}.err{background:#3a1520;border:1px solid #7a2a3c;color:#ffd5db;border-radius:12px;padding:12px;margin:12px 0}
+.coach{border-left:3px solid var(--accent2);padding-left:12px}.xp{display:flex;justify-content:space-between;padding:4px 0}.xp b{color:var(--accent)}
+.toggle{display:flex;gap:6px;margin:8px 0}.toggle button{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px;cursor:pointer;color:var(--muted);min-height:44px}.toggle button[aria-pressed=true]{color:var(--text);border-color:var(--accent)}
+.opt{display:block;width:100%;text-align:left;background:#0e1530;border:1px solid var(--line);border-radius:12px;padding:12px;margin:6px 0;cursor:pointer;min-height:46px}
+.opt[aria-pressed=true]{border-color:var(--accent2);background:#7c8cff1f}.opt.ok{border-color:var(--accent);background:#38e1c126}.opt.bad{border-color:var(--bad);background:#ff7a8a1f}
+.why{font-size:14px;color:var(--muted);margin:4px 0 14px}.q p{margin:12px 0 4px}
+.learn h3{margin-top:14px}.learn h3:first-child{margin-top:0}.learn p{margin:4px 0 8px}
+canvas.game{width:100%;max-width:340px;display:block;margin:10px auto;border-radius:14px;border:1px solid var(--line);touch-action:manipulation;background:#0a1030}
+.planets{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}.planets button{flex:1;min-width:70px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 4px;color:var(--muted);cursor:pointer;min-height:56px;font-size:13px}.planets button[aria-pressed=true]{color:var(--text);border-color:var(--accent)}.planets button span{display:block;font-size:22px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header><div class="brand">Pocket <b>Lab</b></div><button class="chip" id="chip" style="display:none" aria-label="Edit your lab name"></button></header>
+<main id="view" aria-live="polite"></main>
+<nav id="nav" style="display:none">
+  <button data-tab="labs"><span>🔬</span>Labs</button>
+  <button data-tab="board"><span>🏆</span>Ranks</button>
+  <button data-tab="arcade"><span>🎮</span>Arcade</button>
+  <button data-tab="cards"><span>🃏</span>My cards</button>
+</nav>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = {get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const MEDAL = {gold:'🥇', silver:'🥈', bronze:'🥉'};
+const MEDAL_COL = {gold:'#f5c451', silver:'#cfd8e3', bronze:'#d08a4e'};
+const S = {player:null, meta:null, tab:'labs', crewFilter:false, busy:false};
+const FACTS = ['Galileo is said to have timed swinging lamps with his own pulse.', 'Without air, a feather and a hammer fall at exactly the same speed.',
+  'On the Moon, gravity is about one sixth of Earth\'s.', 'A pendulum clock keeps time because swing time barely depends on how far it swings.',
+  'SAM 3.1 follows your object frame by frame, up to 15,000 frames.', 'Your phone camera is a stopwatch with thousands of ticks.'];
+
+async function api(path, opts) {
+  const r = await fetch(path, opts); let j = {};
+  try { j = await r.json(); } catch (e) {}
+  if (!r.ok) throw new Error(j.message || 'Something went wrong. Please try again.');
+  return j;
+}
+const mission = id => S.meta.missions.find(m => m.id === id);
+
+async function boot() {
+  try { S.meta = await api('/api/missions'); } catch (e) { $('#view').innerHTML = `<div class="err">${esc(e.message)}</div>`; return; }
+  const id = store.get('pl_id');
+  if (id) { try { S.player = await api('/api/player/' + id); } catch (e) { store.del('pl_id'); } }
+  go('labs');
+}
+function chrome() {
+  const on = !!S.player;
+  $('#nav').style.display = on ? 'flex' : 'none';
+  $('#chip').style.display = on ? 'flex' : 'none';
+  if (on) $('#chip').innerHTML = `<span>${esc(S.player.name)}</span><strong>${S.player.xp} XP</strong>`;
+  document.querySelectorAll('nav button').forEach(b => b.setAttribute('aria-current', String(b.dataset.tab === S.tab)));
+}
+function go(tab, arg) {
+  if (S.busy && tab !== 'run') return;
+  S.tab = tab; chrome(); window.scrollTo(0, 0);
+  if (!S.player) return renderWelcome();
+  ({labs: renderHome, board: renderBoard, cards: renderCards, arcade: renderArcade, mission: renderMission, edit: renderWelcome})[tab](arg);
+}
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => go(b.dataset.tab));
+$('#chip').onclick = () => go('edit');
+
+function renderWelcome() {
+  const p = S.player;
+  $('#view').innerHTML = `
+    ${p ? '' : `<h1>Turn your phone into a science lab.</h1>
+    <p class="muted">Film an everyday experiment. Meta's SAM 3.1 tracks it, real physics measures it, and you earn medals, XP and collectible constant cards.</p>
+    <div class="flow"><span>1. Predict</span><span>2. Film</span><span>3. Measure</span><span>4. Level up</span></div>`}
+    <div class="panel"><h3>${p ? 'Your lab' : 'Name your lab'}</h3>
+      <label for="nm">Lab name</label><input id="nm" type="text" maxlength="20" value="${esc(p?.name || '')}" placeholder="e.g. Dr. Curie" autocomplete="off">
+      <label for="cr">Crew code <span class="muted small">(optional, share it with friends or your class to get your own leaderboard)</span></label>
+      <input id="cr" type="text" maxlength="16" value="${esc(p?.crew || '')}" placeholder="e.g. PHYS101" autocomplete="off">
+      <p class="small muted">No email or password. We only keep your lab name, crew code and scores.</p>
+      <button class="btn full" id="go" style="margin-top:12px">${p ? 'Save' : 'Enter the lab'}</button></div>`;
+  $('#go').onclick = async () => {
+    const name = $('#nm').value.trim(); if (!name) { $('#nm').focus(); return; }
+    const fd = new FormData(); fd.set('name', name); fd.set('crew', $('#cr').value); fd.set('player_id', S.player?.id || '');
+    try { S.player = await api('/api/player', {method: 'POST', body: fd}); store.set('pl_id', S.player.id); go('labs'); } catch (e) { alert(e.message); }
+  };
+}
+
+function xpBar() {
+  const p = S.player, r = p.rank, pct = r.next_at ? Math.round((p.xp - r.floor) / (r.next_at - r.floor) * 100) : 100;
+  return `<div class="panel"><div style="display:flex;justify-content:space-between;align-items:baseline"><h3>${esc(r.name)}</h3><span class="muted small">${p.xp} XP${r.next_at ? ' · ' + (r.next_at - p.xp) + ' to ' + esc(r.next_name) : ''}</span></div>
+    <div class="bar" role="progressbar" aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100"><i style="width:${pct}%"></i></div></div>`;
+}
+function renderHome() {
+  const b = S.player.bests;
+  const tiles = S.meta.missions.map(m => `<button class="tile" data-m="${m.id}"><div class="em">${m.emoji}</div><h3>${esc(m.title)}${m.status === 'beta' ? '<span class="tag">beta</span>' : ''}${b[m.id]?.medal ? `<span class="tag ${b[m.id].medal}">${MEDAL[b[m.id].medal]} best</span>` : ''}</h3><p class="muted small">${esc(m.tagline)}</p></button>`).join('');
+  const locked = S.meta.locked.map(w => `<div class="tile locked"><div class="em">${w.emoji}</div><h3>${esc(w.name)}<span class="tag">coming soon</span></h3><p class="muted small">${w.ideas.map(esc).join(' · ')}</p></div>`).join('');
+  $('#view').innerHTML = `${xpBar()}<h2>Physics lab</h2><div class="grid">${tiles}</div><h2>More worlds</h2><div class="grid">${locked}</div>
+    <p class="muted small" style="margin-top:20px">Tip: predict first. A good guess earns bonus XP. Medals: gold within 3% of the real value, silver 8%, bronze 15%.</p>`;
+  document.querySelectorAll('[data-m]').forEach(t => t.onclick = () => go('mission', t.dataset.m));
+}
+
+function renderMission(id) {
+  const m = mission(id), pr = m.prediction;
+  $('#view').innerHTML = `<button class="btn ghost" id="back" style="min-height:40px;padding:8px 14px">← Labs</button>
+    <h1>${m.emoji} ${esc(m.title)}</h1><p class="muted">${esc(m.learn)}</p>
+    <div class="panel"><h3>How to film it</h3><ol class="steps">${m.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>
+    <form class="panel" id="f">
+      <h3>1. Make your prediction</h3>
+      <label for="pred">${esc(pr.label)}: <b id="pv"></b> ${esc(pr.unit)}</label>
+      <input id="pred" type="range" min="${pr.min}" max="${pr.max}" step="${pr.step}" value="${pr.default}">
+      <h3 style="margin-top:20px">2. Tell us about your clip</h3>
+      <label for="obj">What is the object? <span class="muted small">(one simple word)</span></label>
+      <input id="obj" type="text" maxlength="30" value="${esc(m.prompt)}" autocomplete="off">
+      <label for="size">${esc(m.size_label)}</label><input id="size" type="number" step="0.1" min="0.3" value="${m.size_default}" inputmode="decimal" required>
+      ${m.needs_length ? `<label for="len">${esc(m.length_label)}</label><input id="len" type="number" step="0.5" min="10" inputmode="decimal" placeholder="e.g. 43" required>` : ''}
+      <label for="fps">Frame rate you filmed at</label>
+      <select id="fps"><option value="0">Auto (read from the video)</option><option>30</option><option>60</option><option>120</option><option>240</option></select>
+      <p class="small muted">${esc(m.fps_hint)} If you slowed the clip down in an editor, pick the speed you originally filmed at.</p>
+      <h3 style="margin-top:20px">3. Add your video</h3>
+      <input id="vid" type="file" accept="video/*,.mov,.mp4" required>
+      <video id="pv2" muted playsinline controls style="display:none;width:100%;border-radius:12px;margin-top:10px;max-height:260px"></video>
+      <div id="msg"></div>
+      <button class="btn full" id="run" style="margin-top:16px">Run my experiment</button>
+    </form>`;
+  $('#back').onclick = () => go('labs');
+  const upd = () => $('#pv').textContent = $('#pred').value; $('#pred').oninput = upd; upd();
+  $('#vid').onchange = e => { const f = e.target.files[0], v = $('#pv2'); if (!f) return; v.src = URL.createObjectURL(f); v.style.display = 'block'; v.onerror = () => v.style.display = 'none'; };
+  $('#f').onsubmit = e => { e.preventDefault(); submitRun(m); };
+}
+
+function xhrUpload(fd, onProg) {
+  return new Promise((res, rej) => {
+    const x = new XMLHttpRequest(); x.open('POST', '/api/jobs');
+    x.upload.onprogress = e => e.lengthComputable && onProg(e.loaded / e.total);
+    x.onload = () => { let j = {}; try { j = JSON.parse(x.responseText); } catch (e) {} x.status < 300 ? res(j) : rej(new Error(j.message || 'Upload failed. Please try again.')); };
+    x.onerror = () => rej(new Error('Upload failed. Check your connection and try again.'));
+    x.send(fd);
+  });
+}
+async function submitRun(m) {
+  const file = $('#vid').files[0]; if (!file) return;
+  const fd = new FormData();
+  fd.set('video', file); fd.set('player_id', S.player.id); fd.set('mission', m.id); fd.set('size_cm', $('#size').value);
+  fd.set('length_cm', $('#len')?.value || 0); fd.set('fps', $('#fps').value); fd.set('prompt', $('#obj').value); fd.set('prediction', $('#pred').value);
+  S.busy = true;
+  $('#view').innerHTML = `<h1>${m.emoji} Running your experiment</h1><div class="panel"><p id="st"><b>Uploading your video</b></p><div class="bar"><i id="pb" style="width:2%"></i></div>
+    <p class="muted small" id="fact" style="margin-top:14px">${esc(FACTS[Math.floor(Math.random() * FACTS.length)])}</p></div>`;
+  const setp = (txt, pct) => { $('#st').innerHTML = `<b>${esc(txt)}</b>`; $('#pb').style.width = pct + '%'; };
+  try {
+    const {job_id} = await xhrUpload(fd, f => setp('Uploading your video', Math.round(2 + f * 12)));
+    let n = 0;
+    for (;;) {
+      await new Promise(r => setTimeout(r, 1200));
+      const j = await api('/api/jobs/' + job_id);
+      if (j.status === 'error') throw new Error(j.message);
+      setp(j.stage || 'Working', j.pct || 20);
+      if (++n % 6 === 0) $('#fact').textContent = FACTS[Math.floor(Math.random() * FACTS.length)];
+      if (j.status === 'done') { S.busy = false; S.player = j.result.player; chrome(); return renderResult(m, j.result); }
+    }
+  } catch (e) {
+    S.busy = false;
+    $('#view').innerHTML = `<h1>${m.emoji} Hmm, that didn't work</h1><div class="err">${esc(e.message)}</div><button class="btn full" id="again">Try again</button>`;
+    $('#again').onclick = () => go('mission', m.id);
+  }
+}
+
+function loadArt(id) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.onerror = () => r(null); i.src = '/api/art/' + id; }); }
+function drawCard(cv, o) {
+  const W = 1080, H = 1350, c = cv.getContext('2d'); cv.width = W; cv.height = H;
+  const col = MEDAL_COL[o.medal] || '#6b7a90';
+  const g = c.createLinearGradient(0, 0, W, H); g.addColorStop(0, '#101a3d'); g.addColorStop(1, '#070b18'); c.fillStyle = g; c.fillRect(0, 0, W, H);
+  if (o.art) { c.globalAlpha = .55; c.drawImage(o.art, 60, 170, 960, 700); c.globalAlpha = 1; const f = c.createLinearGradient(0, 600, 0, 880); f.addColorStop(0, 'rgba(7,11,24,0)'); f.addColorStop(1, '#070b18'); c.fillStyle = f; c.fillRect(0, 600, W, 280); }
+  else { const r = c.createRadialGradient(540, 520, 20, 540, 520, 420); r.addColorStop(0, col + '55'); r.addColorStop(1, 'transparent'); c.fillStyle = r; c.fillRect(0, 150, W, 740); c.font = '300px serif'; c.textAlign = 'center'; c.fillStyle = col + 'cc'; c.fillText(o.emoji, 540, 640); }
+  c.lineWidth = 14; c.strokeStyle = col; c.strokeRect(30, 30, W - 60, H - 60);
+  c.textAlign = 'left'; c.fillStyle = '#9aa6cf'; c.font = '600 34px -apple-system,Helvetica,Arial,sans-serif'; c.fillText('POCKET LAB · CONSTANT CARD', 80, 110);
+  c.textAlign = 'right'; c.fillStyle = col; c.font = '800 54px -apple-system,Helvetica,Arial,sans-serif'; c.fillText((o.medal || 'unranked').toUpperCase(), W - 80, 112);
+  c.textAlign = 'center'; c.fillStyle = '#eef2ff'; c.font = '800 66px -apple-system,Helvetica,Arial,sans-serif'; c.fillText(o.title, 540, 940);
+  c.fillStyle = col; c.font = '800 190px -apple-system,Helvetica,Arial,sans-serif'; c.fillText('g = ' + o.value.toFixed(2), 540, 1130);
+  c.fillStyle = '#9aa6cf'; c.font = '600 42px -apple-system,Helvetica,Arial,sans-serif'; c.fillText(`m/s²  ·  ${o.error.toFixed(1)}% from the real 9.81`, 540, 1195);
+  c.font = '600 38px -apple-system,Helvetica,Arial,sans-serif'; c.fillText(`Measured by ${o.name} with a phone and SAM 3.1`, 540, 1270);
+}
+const cardTitle = id => mission(id).constant.name;
+
+function drawChart(cv, res) {
+  const d = devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight; cv.width = w * d; cv.height = h * d;
+  const c = cv.getContext('2d'); c.scale(d, d);
+  const pts = res.series, xs = pts.map(p => p[0]), ys = pts.map(p => p[1]);
+  const x0 = Math.min(...xs), x1 = Math.max(...xs); let y0 = Math.min(...ys), y1 = Math.max(...ys); if (y1 - y0 < 1e-6) y1 = y0 + 1;
+  const L = 44, R = 12, T = 14, B = 28, X = x => L + (x - x0) / (x1 - x0) * (w - L - R), Y = y => T + (1 - (y - y0) / (y1 - y0)) * (h - T - B);
+  c.strokeStyle = '#2a3560'; c.fillStyle = '#9aa6cf'; c.font = '11px sans-serif'; c.lineWidth = 1;
+  for (let i = 0; i <= 3; i++) { const v = y0 + (y1 - y0) * i / 3, yy = Y(v); c.beginPath(); c.moveTo(L, yy); c.lineTo(w - R, yy); c.stroke(); c.textAlign = 'right'; c.fillText(v.toFixed(2), L - 6, yy + 4); }
+  c.textAlign = 'center'; c.fillText('time (s)', w / 2, h - 6);
+  c.strokeStyle = '#7c8cff'; c.lineWidth = 2; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(X(p[0]), Y(p[1])) : c.moveTo(X(p[0]), Y(p[1]))); c.stroke();
+  if (res.fit) { c.strokeStyle = '#38e1c1'; c.setLineDash([6, 4]); c.beginPath(); let first = true;
+    for (let t = res.fit.t0; t <= res.fit.t0 + res.fall_time + .02; t += .005) { const yy = res.fit.y_top - .5 * res.g * (t - res.fit.t0) ** 2; if (yy < y0 - .05) break; first ? c.moveTo(X(t), Y(yy)) : c.lineTo(X(t), Y(yy)); first = false; }
+    c.stroke(); c.setLineDash([]); }
+}
+
+async function renderResult(m, res) {
+  const medal = res.medal, x = res.xp, pd = res.prediction;
+  const stats = [];
+  if (res.period) stats.push([res.period.toFixed(2) + ' s', 'swing time'], [res.swings, 'swings counted']);
+  if (res.fall_height) stats.push([res.fall_height.toFixed(2) + ' m', 'fall height'], [res.fall_time.toFixed(2) + ' s', 'fall time']);
+  if (res.bounces) stats.push([res.bounces, 'flights found']); if (res.restitution) stats.push([Math.round(res.restitution * 100) + '%', 'bounciness']);
+  stats.push([res.frames, 'frames tracked'], [res.fps + ' fps', 'frame rate']);
+  const predTxt = m.prediction.kind === 'period' ? `You guessed ${pd.guess} s. It was ${pd.actual.toFixed(2)} s.` : `You guessed ${pd.guess} m/s². Earth's pull is 9.81 m/s².`;
+  $('#view').innerHTML = `
+    <div class="medal ${medal || 'none'}" role="img" aria-label="${medal || 'no'} medal">${medal ? MEDAL[medal] : '🔬'}</div>
+    <p class="muted" style="text-align:center;margin:0">${medal ? medal[0].toUpperCase() + medal.slice(1) + ' medal' : 'No medal this time'}</p>
+    <div class="big">${res.g.toFixed(2)} <small>m/s²</small></div>
+    <p class="muted" style="text-align:center">Your measured g. Accepted value: 9.81 · off by ${res.error.toFixed(1)}%</p>
+    <div class="stats">${stats.map(s => `<div><b>${s[0]}</b><span>${s[1]}</span></div>`).join('')}</div>
+    <div class="panel"><h3>${pd.ok ? '🎯 Nice prediction! +25 XP' : '🧠 Your prediction'}</h3><p class="muted">${predTxt}</p></div>
+    <canvas class="chart" id="ch" role="img" aria-label="Tracked motion chart"></canvas>
+    <p class="small muted">${esc(res.axis)} tracked by SAM 3.1${res.fit ? '. Dashed line: the free-fall curve fitted to your drop.' : '.'}</p>
+    ${whyHtml(m, res)}
+    <div class="panel coach"><h3>Lab coach</h3><p>${esc(res.coach)}</p><p class="small muted">Written by ${esc(res.coach_model)}</p></div>
+    <div id="qz"></div>
+    <div class="panel"><h3>XP earned</h3>${x.parts.length ? x.parts.map(p => `<div class="xp"><span>${esc(p.label)}</span><b>+${p.xp}</b></div>`).join('') : '<p class="muted small">You have hit the XP cap for this mission. Try another one!</p>'}
+      <div class="xp" style="border-top:1px solid var(--line);margin-top:6px;padding-top:8px"><span>Total</span><b>${x.xp_after} XP</b></div>
+      ${x.rank_after !== x.rank_before ? `<p style="margin-top:8px"><b>🎉 Rank up! You are now ${esc(x.rank_after)}.</b></p>` : ''}</div>
+    ${medal ? `<h2 style="margin-top:8px">Your constant card</h2><canvas class="card" id="cd"></canvas>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="share" style="flex:1">Share card</button><button class="btn ghost" id="dl" style="flex:1">Download</button></div>` : '<p class="muted">Get within 15% of 9.81 to earn a collectible card. Check the tips from your coach and go again.</p>'}
+    <div style="display:flex;gap:8px;margin-top:16px"><button class="btn ghost" id="again" style="flex:1">Try again</button><button class="btn ghost" id="home" style="flex:1">Back to labs</button></div>`;
+  drawChart($('#ch'), res); mountQuiz(m);
+  $('#again').onclick = () => go('mission', m.id); $('#home').onclick = () => go('labs');
+  if (medal) {
+    const art = await loadArt(m.id), cv = $('#cd');
+    drawCard(cv, {title: cardTitle(m.id), value: res.g, error: res.error, medal, name: S.player.name, art, emoji: m.emoji});
+    const blob = () => new Promise(r => cv.toBlob(r, 'image/png'));
+    $('#dl').onclick = async () => { const a = document.createElement('a'); a.href = URL.createObjectURL(await blob()); a.download = 'pocket-lab-card.png'; a.click(); };
+    $('#share').onclick = async () => {
+      const file = new File([await blob()], 'pocket-lab-card.png', {type: 'image/png'});
+      const text = `I measured gravity with my phone and won a ${medal} medal on Pocket Lab! 🔬`;
+      try { if (navigator.canShare?.({files: [file]})) await navigator.share({files: [file], text, url: location.origin}); else $('#dl').click(); } catch (e) {}
+    };
+  }
+}
+
+function whyHtml(m, res) {
+  const i = res.inputs, o = esc(i.object), e = res.error, f = res.fps;
+  let saw, why, tryit, reasons;
+  if (m.id === 'pendulum') {
+    saw = `Your ${o} swung back and forth about ${res.swings} times. One full swing took ${res.period.toFixed(2)} seconds.`;
+    why = `Gravity keeps pulling the ${o} back toward the middle. A longer string means a longer trip, so each swing takes longer. Scientists write this as <b>g = 4π² × L ÷ T²</b>. We used your string length (${i.length_cm} cm) and your swing time (${res.period.toFixed(2)} s) to work out gravity: <b>${res.g.toFixed(2)} m/s²</b>.`;
+    tryit = `Make the string 4 times longer. Before you film it, guess: will one swing take 2 times as long, or 4 times as long? (It is 2 times. Square roots are sneaky!)`;
+    reasons = `the string has weight too, the air pushes on the swinging ${o}, the camera only takes a picture every 1/${Math.round(f)} of a second, and a tape measure is never perfect.`;
+  } else if (m.id === 'drop') {
+    saw = `Your ${o} fell about ${res.fall_height.toFixed(2)} meters in ${res.fall_time.toFixed(2)} seconds.`;
+    why = `Gravity makes things fall faster every second, about 9.8 m/s faster each second on Earth. The distance fallen is <b>½ × g × t²</b>. From your fall we worked out gravity: <b>${res.g.toFixed(2)} m/s²</b>. Heavy or light, everything falls at the same pace when air is not in the way.`;
+    tryit = `Drop a book and a flat sheet of paper. Then lay the paper on top of the book and drop them together. Why does the paper fall with the book now? (Hint: air.)`;
+    reasons = `a fall is very short, so a tiny timing error matters, the object might tilt or spin, and a tape measure is never perfect. Filming at 240 fps helps a lot.`;
+  } else {
+    saw = `We found ${res.bounces} arcs of your ball flying through the air.${res.restitution ? ` Each bounce kept about ${Math.round(res.restitution * 100)}% of its speed.` : ''}`;
+    why = `Between bounces the ball is only pulled by gravity, so it flies in a curve called a <b>parabola</b>. The shape of each curve tells us gravity: <b>${res.g.toFixed(2)} m/s²</b>. Every bounce squishes the ball and turns a little energy into sound and heat, so the next bounce is lower.`;
+    tryit = `Bounce the same ball on carpet, then on a hard floor. Which keeps more of its bounce? Guess first!`;
+    reasons = `the ball spins and tilts, the camera takes a picture only every 1/${Math.round(f)} of a second, and the floor squishes a little.`;
+  }
+  const gap = e <= 3 ? `That is super close to the real value of 9.81. Great measuring! 🎉`
+    : `The real value is 9.81, so you were ${e.toFixed(1)}% off. That is normal! Real scientists never get a perfect number. Small things add up: ${reasons}`;
+  return `<div class="panel learn"><h3>🔎 What happened?</h3><p>${saw}</p><h3>🧩 Why?</h3><p>${why}</p>
+    <h3>🎯 How close were we?</h3><p>${gap}</p><h3>🧪 Try this next</h3><p>${tryit}</p></div>`;
+}
+
+function mountQuiz(m) {
+  const box = $('#qz'), qs = m.quiz || [], ans = {};
+  if (!qs.length) return;
+  box.innerHTML = `<div class="panel"><h3>🧠 Science check</h3><p class="muted small">${qs.length} quick questions. Each right answer earns +10 XP the first time.</p>` +
+    qs.map((q, qi) => `<div class="q" data-q="${q.id}"><p><b>${qi + 1}. ${esc(q.q)}</b></p>${q.options.map((o, oi) => `<button type="button" class="opt" data-o="${oi}" aria-pressed="false">${esc(o)}</button>`).join('')}<p class="why"></p></div>`).join('') +
+    `<button class="btn full" id="qsub" disabled>Check my answers</button><p id="qres" style="margin-top:10px"></p></div>`;
+  box.querySelectorAll('.q').forEach(qd => qd.querySelectorAll('.opt').forEach(b => b.onclick = () => {
+    if ($('#qsub').dataset.done) return;
+    qd.querySelectorAll('.opt').forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true');
+    ans[qd.dataset.q] = +b.dataset.o; $('#qsub').disabled = Object.keys(ans).length < qs.length;
+  }));
+  $('#qsub').onclick = async () => {
+    $('#qsub').disabled = true;
+    try {
+      const r = await api('/api/quiz', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({player_id: S.player.id, mission: m.id, answers: ans})});
+      r.results.forEach(x => { const qd = box.querySelector(`[data-q="${x.id}"]`), ob = qd.querySelectorAll('.opt');
+        ob[x.answer].classList.add('ok'); if (!x.ok) ob[ans[x.id]].classList.add('bad');
+        qd.querySelector('.why').textContent = (x.ok ? '✅ ' : '❌ ') + x.why; });
+      $('#qsub').dataset.done = '1'; $('#qsub').style.display = 'none';
+      $('#qres').innerHTML = `<b>${r.correct} out of ${r.results.length} correct${r.gained ? ` · +${r.gained} XP` : ' · no new XP (you already earned these)'}</b>`;
+      S.player = r.player; chrome();
+    } catch (e) { $('#qres').textContent = e.message; $('#qsub').disabled = false; }
+  };
+}
+
+function renderArcade() {
+  const mine = Object.values(S.player.bests).find(b => b.measured);
+  const planets = [{id: 'moon', name: 'Moon', g: 1.62, em: '🌙'}, {id: 'mars', name: 'Mars', g: 3.71, em: '🔴'}, {id: 'earth', name: 'Earth', g: 9.81, em: '🌍'}, {id: 'jup', name: 'Jupiter', g: 24.79, em: '🪐'}];
+  if (mine) planets.unshift({id: 'lab', name: 'Your lab', g: mine.measured, em: '🔬'});
+  let pick = planets.find(p => p.id === 'earth');
+  $('#view').innerHTML = `<h1>🎮 Gravity Drop</h1><p class="muted">Tap to drop the ball onto the moving target. Gravity changes how long the fall takes, so you must tap <b>early</b> on low-gravity worlds! 5 drops per round. Each hit earns +4 XP (3 rounds a day count).</p>
+    <div class="planets" id="pl">${planets.map(p => `<button data-p="${p.id}" aria-pressed="${p === pick}"><span>${p.em}</span>${esc(p.name)}<br>${p.g.toFixed(2)}</button>`).join('')}</div>
+    <p class="small muted" id="info"></p><canvas class="game" id="gm"></canvas><div id="gres"></div>
+    <button class="btn full" id="gstart">Start round</button>`;
+  const info = () => $('#info').textContent = `${pick.name}: gravity ${pick.g.toFixed(2)} m/s². The ball takes about ${Math.sqrt(2 * 4.7 / pick.g).toFixed(1)} s to fall.`; info();
+  document.querySelectorAll('#pl button').forEach(b => b.onclick = () => { pick = planets.find(p => p.id === b.dataset.p); document.querySelectorAll('#pl button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); info(); drawIdle(); });
+  const cv = $('#gm'), W = 6, H = 5, sc = 56; cv.width = W * sc; cv.height = H * sc + 40;
+  function frame(c, st) {
+    c.fillStyle = '#0a1030'; c.fillRect(0, 0, cv.width, cv.height);
+    for (let i = 0; i < 24; i++) { c.fillStyle = '#ffffff30'; c.fillRect((i * 97) % cv.width, (i * 53) % (H * sc - 20), 2, 2); }
+    c.fillStyle = '#1b2442'; c.fillRect(0, H * sc, cv.width, 40);
+    c.fillStyle = '#38e1c1'; c.fillRect((st.tx - .7) * sc, H * sc - 8, 1.4 * sc, 10);
+    c.font = '34px serif'; c.textAlign = 'center'; c.fillText(pick.em, W / 2 * sc, 36);
+    if (st.state !== 'idle') { c.beginPath(); c.fillStyle = '#f5c451'; c.arc(W / 2 * sc, 10 + st.y * sc + 14, 12, 0, 7); c.fill(); }
+    c.fillStyle = '#eef2ff'; c.font = '600 14px sans-serif'; c.textAlign = 'left'; c.fillText(`Drop ${Math.min(st.drop + 1, 5)} of 5 · Hits ${st.hits}`, 8, H * sc + 26);
+    if (st.msg) { c.textAlign = 'center'; c.font = '800 26px sans-serif'; c.fillStyle = st.msg.startsWith('H') ? '#38e1c1' : '#ff7a8a'; c.fillText(st.msg, W / 2 * sc, H * sc / 2); }
+  }
+  function drawIdle() { frame(cv.getContext('2d'), {state: 'idle', tx: 3, y: 0, drop: 0, hits: 0, msg: ''}); } drawIdle();
+  $('#gstart').onclick = () => {
+    $('#gres').innerHTML = ''; $('#gstart').style.display = 'none';
+    const c = cv.getContext('2d'), st = {state: 'aim', tx: 1 + Math.random() * 4, y: 0, drop: 0, hits: 0, msg: ''};
+    let dir = Math.random() < .5 ? -1 : 1, speed = 1.6 + Math.random() * .6, t = 0, pause = 0, last = performance.now();
+    cv.onpointerdown = e => { e.preventDefault(); if (st.state === 'aim') { st.state = 'fall'; t = 0; } };
+    const loop = now => {
+      if (S.tab !== 'arcade') return;
+      const dt = Math.min(.05, (now - last) / 1000); last = now;
+      st.tx += dir * speed * dt; if (st.tx > W - .7) { st.tx = W - .7; dir = -1; } if (st.tx < .7) { st.tx = .7; dir = 1; }
+      if (st.state === 'fall') { t += dt; st.y = .5 * pick.g * t * t;
+        if (st.y >= H - .3) { st.y = H - .3; const hit = Math.abs(st.tx - W / 2) < .7; if (hit) st.hits++; st.msg = hit ? 'Hit! 🎯' : 'Miss!'; st.state = 'pause'; pause = .9; } }
+      else if (st.state === 'pause') { pause -= dt; if (pause <= 0) { st.msg = ''; st.drop++; if (st.drop >= 5) { st.state = 'over'; } else { st.state = 'aim'; st.y = 0; t = 0; } } }
+      frame(c, st);
+      if (st.state === 'over') return endRound(st.hits);
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  };
+  async function endRound(hits) {
+    cv.onpointerdown = null;
+    const fd = new FormData(); fd.set('player_id', S.player.id); fd.set('hits', hits);
+    let line = `You hit ${hits} out of 5!`;
+    try { const r = await api('/api/arcade', {method: 'POST', body: fd}); S.player = r.player; chrome(); line += r.xp ? ` +${r.xp} XP` : (r.capped ? ' (today\'s XP rounds are used up, but keep playing for fun)' : ''); } catch (e) {}
+    $('#gres').innerHTML = `<div class="panel"><h3>${esc(line)}</h3><p class="muted small">Did you notice? On ${esc(pick.name)} the ball took ${Math.sqrt(2 * 4.7 / pick.g).toFixed(1)} s to land. The weaker gravity is, the earlier you have to let go.</p></div>`;
+    $('#gstart').textContent = 'Play again'; $('#gstart').style.display = 'flex';
+  }
+}
+
+async function renderBoard() {
+  const crew = S.player.crew;
+  $('#view').innerHTML = `<h1>Leaderboard</h1><p class="muted">The more you learn, the higher you climb.</p>
+    ${crew ? `<div class="toggle"><button id="t-all" aria-pressed="${!S.crewFilter}">Everyone</button><button id="t-crew" aria-pressed="${S.crewFilter}">Crew ${esc(crew)}</button></div>` : '<p class="small muted">Add a crew code (tap your name at the top) to get a private class or friends board.</p>'}
+    <div class="panel" id="lb">Loading…</div>`;
+  if (crew) { $('#t-all').onclick = () => { S.crewFilter = false; renderBoard(); }; $('#t-crew').onclick = () => { S.crewFilter = true; renderBoard(); }; }
+  try {
+    const {rows} = await api('/api/leaderboard?crew=' + encodeURIComponent(crew && S.crewFilter ? crew : ''));
+    $('#lb').innerHTML = rows.length ? rows.map((r, i) => `<div class="row ${r.id === S.player.id ? 'me' : ''}"><div class="n">${i < 3 ? ['🥇', '🥈', '🥉'][i] : i + 1}</div><div class="who"><b>${esc(r.name)}${r.id === S.player.id ? ' (you)' : ''}</b><span class="muted small">${esc(r.rank)}${r.crew ? ' · ' + esc(r.crew) : ''}</span></div><b>${r.xp} XP</b></div>`).join('') : '<p class="muted">No one is on the board yet. Run an experiment to be first!</p>';
+  } catch (e) { $('#lb').innerHTML = `<div class="err">${esc(e.message)}</div>`; }
+}
+
+async function renderCards() {
+  const b = S.player.bests, ids = S.meta.missions.map(m => m.id);
+  $('#view').innerHTML = `<h1>My cards</h1><p class="muted">Win a medal to collect a card for each constant you measure.</p><div class="grid" id="cg"></div>`;
+  for (const id of ids) {
+    const m = mission(id), best = b[id], box = document.createElement('div');
+    if (best?.medal) {
+      const cv = document.createElement('canvas'); cv.className = 'card'; box.appendChild(cv); cv.style.cursor = 'pointer';
+      const art = await loadArt(id); drawCard(cv, {title: cardTitle(id), value: best.measured, error: best.error, medal: best.medal, name: S.player.name, art, emoji: m.emoji});
+      cv.onclick = () => { const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = 'pocket-lab-card.png'; a.click(); };
+    } else box.innerHTML = `<div class="tile locked"><div class="em">${m.emoji}</div><h3>${esc(cardTitle(id))}</h3><p class="muted small">Not collected yet</p></div>`;
+    $('#cg').appendChild(box);
+  }
+}
+boot();
+</script>
+</body>
+</html>
